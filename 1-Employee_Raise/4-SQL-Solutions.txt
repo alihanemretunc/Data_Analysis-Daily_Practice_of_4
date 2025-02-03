@@ -1,0 +1,49 @@
+SELECT e.employee_id, e.department, e.salary AS old_salary,
+  ROUND(e.salary * 1.15, 2) AS new_salary
+FROM employee_raise AS e
+JOIN (
+    SELECT department, MIN(salary) AS lowest_salary_per_dep
+    FROM employee_raise
+    GROUP BY department
+) AS minimum_salaries
+    ON e.department = minimum_salaries.department AND 
+       e.salary = minimum_salaries.lowest_salary_per_dep
+ORDER BY new_salary DESC;
+
+
+SELECT employee_id, department, salary AS old_salary,
+  ROUND(salary * 1.15, 2) AS new_salary
+FROM employee_raise e1
+WHERE salary IN (
+  SELECT MIN(salary)
+  FROM employee_raise e2
+  WHERE e1.department = e2.department
+  )
+ORDER BY new_salary DESC;
+
+
+SELECT employee_id, department, salary AS old_salary,
+  ROUND(salary * 1.15, 2) AS new_salary
+FROM employee_raise
+WHERE employee_id IN (
+  SELECT employee_id
+  FROM employee_raise
+  WHERE (department, salary) IN (
+       SELECT department, MIN(salary) AS lowest_salary_per_dep
+       FROM employee_raise
+       GROUP BY department
+  )
+)
+ORDER BY new_salary DESC;
+
+
+SELECT employee_id, department, old_salary, new_salary
+FROM (
+    SELECT employee_id, department, salary AS old_salary,
+    ROUND(salary * 1.15, 2) AS new_salary,
+    ROW_NUMBER() OVER(PARTITION BY department ORDER BY new_salary) AS rank
+    FROM employee_raise
+) rankings
+WHERE rank = 1
+ORDER BY new_salary DESC;
+

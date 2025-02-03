@@ -1,0 +1,5 @@
+SELECT SUBSTRING_INDEX(SUBSTRING_INDEX(email_address, '@', -1), '.', 1) AS domain_name,
+       COUNT(*) AS domain_count
+FROM emails
+GROUP BY domain_name
+ORDER BY domain_count DESC, domain_name DESC;
